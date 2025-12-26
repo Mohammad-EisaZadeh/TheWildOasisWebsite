@@ -12,17 +12,17 @@ async function Reservation({ cabin }) {
   ]);
   const session = await auth();
   return (
-    <div className="min-h-[400px]s grid grid-cols-2 border border-primary-800">
-      <DateSelector
-        settings={settings}
-        bookedDates={bookedDates}
-        cabin={cabin}
-      />
+    <div className="min-h-[400px]s flex flex-col border border-primary-800 xl:flex-row">
       {session?.user ? (
         <ReservationForm user={session.user} cabin={cabin} />
       ) : (
         <LoginMessage />
       )}
+      <DateSelector
+        settings={settings}
+        bookedDates={bookedDates}
+        cabin={cabin}
+      />
     </div>
   );
 }

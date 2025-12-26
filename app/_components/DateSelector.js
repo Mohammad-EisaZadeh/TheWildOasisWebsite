@@ -9,6 +9,7 @@ import { useState } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useReservation } from "./ReservationContext";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 function isAlreadyBooked(range, datesArr) {
   return (
@@ -31,10 +32,14 @@ function DateSelector({ settings, cabin, bookedDates }) {
   const cabinPrice = numNights * (regularPrice - discount);
   // SETTINGS
   const { minBookingLength, maxBookingLength } = settings;
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
-    <div className="flex flex-col justify-between">
+    <div className="flex flex-1 flex-col justify-between">
       <DayPicker
-        className="place-self-center pt-12"
+        className="place-self-center py-8"
         mode="range"
         min={minBookingLength - 1}
         max={maxBookingLength}
@@ -44,7 +49,7 @@ function DateSelector({ settings, cabin, bookedDates }) {
         fromDate={new Date()}
         toYear={new Date().getFullYear() + 5}
         captionLayout="dropdown"
-        numberOfMonths={2}
+        numberOfMonths={isMobile ? 1 : 2}
         disabled={(curDate) =>
           isPast(curDate) ||
           bookedDates.some((date) => isSameDay(date, curDate))
