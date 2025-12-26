@@ -9,13 +9,13 @@ export default function Page() {
         src={bg}
         className="object-cover object-top"
         placeholder="blur"
-        quality={80}
+        quality={90}
         fill
         alt="Mountains and forests with two cabins"
       />
 
       <div className="relative z-10 text-center">
-        <h1 className="mb-10 text-8xl font-normal tracking-tight text-primary-50">
+        <h1 className="mb-10 text-5xl font-normal tracking-tight text-primary-50 md:text-8xl">
           Welcome to paradise.
         </h1>
         <Link

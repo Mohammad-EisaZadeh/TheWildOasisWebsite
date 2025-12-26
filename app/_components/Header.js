@@ -1,5 +1,6 @@
 import Navigation from "@/app/_components/Navigation";
 import Logo from "@/app/_components/Logo";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 function Header() {
   return (
