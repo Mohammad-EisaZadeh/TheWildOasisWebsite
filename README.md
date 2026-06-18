@@ -46,9 +46,13 @@ Built as part of [Jonas Schmedtmann's Ultimate React Course](https://www.udemy.c
 Create a `.env.local` file in the project root:
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_KEY=your_supabase_anon_key
+# Supabase (server-side — use service role key for SUPABASE_KEY)
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_KEY=your_supabase_service_role_key
+
+# Or use the public publishable key names instead:
+# NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+# NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 
 # NextAuth
 AUTH_SECRET=your_random_secret_string
@@ -58,8 +62,11 @@ AUTH_GOOGLE_SECRET=your_google_client_secret
 
 | Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_KEY` | Supabase anonymous (public) API key |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_KEY` | Supabase **service role** key (recommended for server-side; bypasses RLS since auth is handled by NextAuth, not Supabase Auth) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Alternative to `SUPABASE_URL` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Alternative to `SUPABASE_KEY` (Supabase publishable key) |
+| `NEXT_PUBLIC_SUPABASE_KEY` | Legacy anon key name (still supported) |
 | `AUTH_SECRET` | Random string used to encrypt session tokens ([generate one](https://generate-secret.vercel.app/32)) |
 | `AUTH_GOOGLE_ID` | Google OAuth client ID |
 | `AUTH_GOOGLE_SECRET` | Google OAuth client secret |
@@ -74,7 +81,26 @@ AUTH_GOOGLE_SECRET=your_google_client_secret
 
 ### Supabase setup
 
-The app expects the following tables: `cabins`, `guests`, `bookings`, and `settings`. Cabin images are served from Supabase Storage (`cabin-images` bucket). Use the course resources or Supabase SQL scripts to create and seed the database.
+1. Run the schema in **Supabase → SQL Editor**:
+
+   [`supabase/schema.sql`](supabase/schema.sql)
+
+2. Create two **public** storage buckets in **Dashboard → Storage**:
+   - `cabin-images` — cabin photos
+   - `avatars` — guest profile photos (optional)
+
+3. Seed cabin data via the course CSV/resources or the Supabase Table Editor.
+
+#### Database tables (camelCase columns)
+
+| Table | Purpose |
+|---|---|
+| `cabins` | Cabin listings (`name`, `maxCapacity`, `regularPrice`, `discount`, `image`, `description`) |
+| `guests` | Guest profiles (`fullName`, `email`, `nationality`, `nationalID`, `countryFlag`) |
+| `bookings` | Reservations (`startDate`, `endDate`, `numNights`, `numGuests`, `cabinPrice`, `extrasPrice`, `totalPrice`, `status`, `hasBreakfast`, `isPaid`, `observations`, `cabinId`, `guestId`) |
+| `settings` | Hotel rules (`minBookingLength`, `maxBookingLength`, `maxGuestsPerBooking`, `breakFastPrice`) |
+
+New guests are created on first Google sign-in with empty profile fields; nationality and national ID are filled in later on the profile page.
 
 ---
 

@@ -17,15 +17,21 @@ const authConfig = {
       try {
         const existingGuest = await getGuest(user.email);
         if (!existingGuest)
-          await createGuest({ email: user.email, fullName: user.name });
+          await createGuest({
+            email: user.email,
+            fullName: user.name,
+            nationality: "",
+            nationalID: "",
+            countryFlag: "",
+          });
         return true;
       } catch {
         return false;
       }
     },
-    async session({ session, user }) {
+    async session({ session }) {
       const guest = await getGuest(session.user.email);
-      session.user.guestId = guest.id;
+      if (guest) session.user.guestId = guest.id;
       return session;
     },
   },

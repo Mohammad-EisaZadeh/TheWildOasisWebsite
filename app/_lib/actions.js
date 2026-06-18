@@ -2,30 +2,33 @@
 
 import { revalidatePath } from "next/cache";
 import { auth, signIn, signOut } from "./auth";
-import supabase from "./supabase";
+import { supabase } from "./supabase";
 import { getBookings } from "./data-service";
 import { redirect } from "next/navigation";
+
+function toISODate(date) {
+  return date.toISOString().split("T")[0];
+}
 
 export async function createBooking(bookingData, formData) {
   const session = await auth();
   if (!session) throw new Error("You Must Be Logged In ");
   const newBooking = {
-    ...bookingData,
+    startDate: toISODate(bookingData.startDate),
+    endDate: toISODate(bookingData.endDate),
+    numNights: bookingData.numNights,
+    cabinPrice: bookingData.cabinPrice,
+    cabinId: bookingData.cabinId,
     guestId: session.user.guestId,
     numGuests: Number(formData.get("numGuests")),
-    observations: formData.get("observations").slice(0, 1000),
+    observations: formData.get("observations")?.slice(0, 1000) ?? "",
     extrasPrice: 0,
     totalPrice: bookingData.cabinPrice,
     isPaid: false,
     hasBreakfast: false,
     status: "unconfirmed",
   };
-  const { error } = await supabase
-    .from("bookings")
-    .insert([newBooking])
-    // So that the newly created object gets returned!
-    .select()
-    .single();
+  const { error } = await supabase.from("bookings").insert([newBooking]);
 
   if (error) {
     console.error(error);
@@ -64,10 +67,10 @@ export async function updateReservation(formData) {
   const guestBookingIds = guestBookings.map((booking) => booking.id);
 
   if (!guestBookingIds.includes(bookingId))
-    throw new Error("You Are Not Allowed To Delete This Booking");
+    throw new Error("You Are Not Allowed To Update This Booking");
 
   const numGuests = Number(formData.get("numGuests"));
-  const observations = Number(formData.get("observations").slice(0, 1000));
+  const observations = formData.get("observations")?.slice(0, 1000) ?? "";
 
   const updateData = { numGuests, observations };
 
@@ -78,9 +81,10 @@ export async function updateReservation(formData) {
     .select()
     .single();
 
-  if (error) throw new Error("Guest could not be updated");
+  if (error) throw new Error("Booking could not be updated");
 
   revalidatePath(`/account/reservations/edit/${bookingId}`);
+  revalidatePath("/account/reservations");
   redirect("/account/reservations");
 }
 
@@ -110,5 +114,5 @@ export async function signInAction() {
   await signIn("google", { redirectTo: "/account" });
 }
 export async function signOutAction() {
-  await signOut("google", { redirectTo: "/" });
+  await signOut({ redirectTo: "/" });
 }
